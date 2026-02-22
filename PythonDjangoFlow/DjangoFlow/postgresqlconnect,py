@@ -1,0 +1,364 @@
+<!-- What is PostgreSQL?
+
+
+
+PostgreSQL is an open-source, object-relational database management system (ORDBMS) that stores and manages structured data using SQL.
+
+
+
+Let’s break that:
+
+Open-source → Free to use, source code available
+
+Relational → Data stored in tables
+
+Database Management System (DBMS) → Software that manages databases
+
+SQL-based → Uses Structured Query Language
+
+
+
+
+
+
+🟢 2️⃣ What is a Database? 
+
+
+A database is an organized collection of data stored electronically.
+
+Example:
+
+Student records
+
+Course details
+
+Employee information
+
+Without database:
+Data stored in files → Hard to manage
+With database:
+Structured → Secure → Fast → Scalable
+
+
+
+
+
+ 3️⃣ What is a Relational Database?
+
+A relational database stores data in tables and establishes relationships between those tables using keys.
+
+Example:
+
+Students Table
+
+id	name
+1	Mohit
+
+Courses Table
+
+id	course_name
+10	Python
+
+Enrollment Table
+
+student_id	course_id
+1	10
+
+Relationship created using:
+
+Primary Key
+
+Foreign Key
+
+ 4️⃣ Important Database Terms (Must Teach)
+ 1. Table
+
+Definition:
+A table is a structured format to store data in rows and columns.
+
+
+
+ 2. Row (Record)
+
+Definition:
+A row represents one single entry in a table.
+
+
+Example:
+One student = one row.
+
+
+
+ 3. Column (Field)
+
+
+
+Definition:
+A column represents a specific attribute of data.
+
+Example:
+name, email, age.
+
+
+
+
+🔹 4. Primary Key
+
+Definition:
+A primary key uniquely identifies each record in a table.
+
+Example:
+id column.
+
+Properties:
+
+Unique
+
+Cannot be NULL
+
+Only one per table
+
+
+
+
+
+
+ 5. Foreign Key
+
+Definition:
+A foreign key creates a relationship between two tables.
+
+It references the primary key of another table.
+
+
+
+
+
+
+ 6. SQL
+
+Definition:
+SQL (Structured Query Language) is used to communicate with relational databases.
+
+Example:
+
+SELECT * FROM students;
+
+
+
+
+
+ 5️⃣ Why PostgreSQL is Popular?
+
+
+Very stable
+
+ACID compliant
+
+Supports JSON
+
+Supports indexing
+
+Highly scalable
+
+Used in production systems
+
+Used by:
+
+Instagram
+
+Reddit
+
+Enterprise systems
+
+
+
+
+ 6️⃣ Installation (Step-by-Step)
+
+Official download:
+
+ https://www.postgresql.org/download/
+
+For Windows:
+ https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
+
+During Installation
+
+Important points:
+
+Set password for postgres user
+
+Default port: 5432
+
+Install pgAdmin
+
+Verify Installation
+
+
+
+
+
+Open terminal:
+
+psql --version
+
+
+
+ 7️⃣ PostgreSQL Architecture (Conceptual)
+
+
+
+Client (psql / Django / pgAdmin)
+⬇
+PostgreSQL Server
+⬇
+Database Files stored on disk
+
+PostgreSQL runs as a background service.
+
+
+
+
+
+ 8️⃣ Create Database & User (Practical)
+
+Open terminal:
+
+psql -U postgres
+Create Database
+CREATE DATABASE lms_db;
+
+
+
+
+A database is a container that holds tables.
+
+Create User
+CREATE USER lms_user WITH PASSWORD 'password123';
+
+
+A user/role defines who can access the database.
+
+
+
+Grant Permissions
+GRANT ALL PRIVILEGES ON DATABASE lms_db TO lms_user;
+
+
+Why?
+Security best practice:
+Never use root/postgres user in applications.
+
+ 9️⃣ Basic SQL Operations (CRUD)
+
+CRUD = Create, Read, Update, Delete
+
+Create Table
+CREATE TABLE students (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100)
+);
+
+
+
+
+Insert Data
+INSERT INTO students (name, email)
+VALUES ('Mohit', 'mohit@gmail.com');
+
+
+
+Read Data
+SELECT * FROM students;
+Update Data
+UPDATE students
+SET name = 'Mohit'
+WHERE id = 1;
+Delete Data
+DELETE FROM students WHERE id = 1;
+
+
+
+ 1️⃣0️⃣ What is ACID? (Very Important Concept)
+
+PostgreSQL follows ACID properties.
+
+A — Atomicity
+
+Transaction either fully completes or fails completely.
+
+C — Consistency
+
+Database remains valid before and after transaction.
+
+I — Isolation
+
+Transactions do not interfere with each other.
+
+D — Durability
+
+Once committed, data is permanently saved.
+
+Example:
+Bank transfer system.
+
+
+
+ 1️⃣1️⃣ What is Index?
+Definition:
+
+An index improves search performance.
+
+Without index:
+Full table scan.
+
+With index:
+Faster lookup.
+
+Example:
+
+CREATE INDEX idx_email ON students(email);
+
+
+
+
+
+
+ 1️⃣2️⃣ PostgreSQL + Django Connection (Concept)
+
+Django uses:
+
+psycopg2 driver
+
+
+
+In Terminal 
+
+pip install psycopg2-binary
+
+
+
+
+
+
+Flow:
+
+Django ORM
+⬇
+psycopg2
+⬇
+PostgreSQL
+
+Django Configuration
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'lms_db',
+        'USER': 'lms_user',
+        'PASSWORD': 'password123',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+} -->

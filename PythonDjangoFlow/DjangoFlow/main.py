@@ -793,7 +793,8 @@ class TaskListView(generics.ListAPIView):
 
 
 
-# Now update REST_FRAMEWORK:
+# Now update REST_FRAMEWORK:+
+
 
 # REST_FRAMEWORK = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -1385,3 +1386,594 @@ def create_task(request):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Why Async Matters in Django
+
+# Web apps spend most time:
+
+# Waiting for database
+
+# Waiting for external APIs
+
+# Waiting for file I/O
+
+# Waiting for network
+
+
+
+
+# Async helps when:
+
+# ✔ You are waiting
+# ❌ Not when doing heavy CPU work
+
+
+
+
+
+# ⚙️  How Django Works Normally
+
+# Django was traditionally synchronous.
+
+# Example:
+
+# def home(request):
+#     data = User.objects.all()
+#     return JsonResponse({"count": data.count()})
+
+
+
+
+
+
+
+# This blocks until query finishes.
+
+
+
+
+
+#  3️⃣ Async in Django (Django 3.1+)
+
+# Django supports async views using:
+
+# async def
+
+#  Basic Async View Example
+# import asyncio
+# from django.http import JsonResponse
+
+# async def test_async(request):
+#     await asyncio.sleep(3)
+#     return JsonResponse({"message": "Done"})
+
+
+
+
+
+
+# Now:
+
+# Server does not block
+
+# Other requests can be handled
+
+
+
+
+
+#  What is await?
+
+# await means:
+
+# Pause this function, but don’t block the entire server.
+
+# 🧠 Important Rule
+
+# You can only use await inside:
+
+# async def function():
+
+# 🧩  Real Example — Calling External API
+
+
+
+
+
+# Imagine Mini LMS:
+
+# You want to verify assignment plagiarism using external API.
+
+# ❌ Sync Version
+# import requests
+
+# def check_plagiarism(request):
+#     response = requests.get("https://api.example.com/check")
+#     return JsonResponse(response.json())
+
+
+
+
+
+
+# ⚠️ Problem: requests blocks server.
+
+# ✅ Async Version
+# import httpx
+# from django.http import JsonResponse
+
+# async def check_plagiarism(request):
+#     async with httpx.AsyncClient() as client:
+#         response = await client.get("https://api.example.com/check")
+#     return JsonResponse(response.json())
+
+
+
+
+
+
+# Now:
+
+# While waiting for API
+
+# Server handles other users
+
+
+
+#   Async Database in Django
+
+# ⚠ Very Important:
+
+# Django ORM is still mostly synchronous.
+
+# This will block:
+
+# users = User.objects.all()
+
+# Solution: Use sync_to_async
+# from asgiref.sync import sync_to_async
+# from django.contrib.auth.models import User
+
+# async def get_users(request):
+#     users = await sync_to_async(list)(User.objects.all())
+#     return JsonResponse({"count": len(users)})
+
+
+
+
+
+# 🎓 Real-Life LMS Example
+
+# Imagine:
+
+# 500 students submit assignments
+
+# Each submission checks plagiarism API
+
+# Without async → server slows down
+
+# With async → multiple API calls handled eff   iciently
+
+
+
+
+
+# 🔥  Async vs Sync Comparison
+# Feature	Sync	Async
+# Handles multiple users	Limited	Better
+# Good for API calls	❌	✅
+# Good for CPU heavy work	✅	❌
+# Code complexity	Simple	Slightly advanced
+
+
+
+
+
+
+
+
+#   When NOT to Use Async
+
+# Do NOT use async for:
+
+# Heavy calculations
+
+# Image processing
+
+# ML model training
+
+# CPU intensive tasks
+
+# For that → use:
+
+# Celery
+
+# Background workers
+
+
+
+
+#  Multiple Tasks Example
+# import asyncio
+
+# async def task1():
+#     await asyncio.sleep(2)
+#     return "Task 1 done"
+
+# async def task2():
+#     await asyncio.sleep(3)
+#     return "Task 2 done"
+
+# async def main():
+#     results = await asyncio.gather(task1(), task2())
+#     print(results)
+
+
+# Output after 3 seconds:
+
+# ["Task 1 done", "Task 2 done"]
+
+
+# Instead of 5 seconds 
+
+
+
+
+# Sync = One person cooking one dish at a time
+# Async = One chef managing multiple dishes while they cook
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# First: What is Redis?
+#  Simple Definition
+
+# Redis is an in-memory data store used as a cache to make applications faster.
+
+
+
+# Very important:
+
+
+# 👉 Redis stores data in RAM, not on disk.
+# 👉 RAM is much faster than database queries.
+
+# 🏫 Real-Life Example 1 — Library 📚
+
+
+
+
+
+# Imagine:
+
+# You ask librarian for a book.
+
+# ❌ Without Cache
+
+# Librarian goes to storage room
+
+# Searches shelf
+
+# Brings book
+
+# Every time you ask → same process
+
+# Slow 🐢
+
+# ✅ With Cache
+
+# If 10 students ask same book:
+
+# Librarian keeps book on desk
+
+# Next student → instantly gives it
+
+# Fast 🚀
+
+# Redis = The desk
+# Database = The storage room
+
+
+
+
+
+
+# 🖥️ Real-Life Example 2 — E-commerce Website
+
+# Imagine:
+
+# Homepage shows:
+
+# Top 10 products
+
+# Best sellers
+
+# Categories
+
+# If 10,000 users visit homepage:
+
+# Without cache:
+
+# Database queried 10,000 times 😨
+
+# With Redis:
+
+# Query once
+
+# Store result in Redis
+
+# Serve from memory
+
+# Huge performance boost 
+
+
+
+
+
+
+
+# ⚡ Why Redis is Fast?
+
+# Because:
+
+# Database → disk-based (slower)
+
+# Redis → RAM-based (very fast)
+
+# RAM speed ≈ nanoseconds
+# Disk speed ≈ milliseconds
+
+# That’s 100x+ faster.
+
+
+
+
+#  What is Caching?
+
+# Caching means storing frequently used data temporarily in fast storage.
+
+
+
+# 🎯 What Should Be Cached?
+
+# Good candidates:
+
+# Homepage data
+
+# Leaderboards
+
+# Dashboard stats
+
+# Course list
+
+# Frequently accessed API responses
+
+# Not good for:
+
+# Rarely used data
+
+# Highly dynamic data (changes every second)
+
+
+
+# 🔥 Basic Redis Working Flow
+
+# 1️⃣ User requests data
+# 2️⃣ Server checks Redis
+# 3️⃣ If found → return instantly
+# 4️⃣ If not found → fetch from DB
+# 5️⃣ Store in Redis
+# 6️⃣ Return response
+
+#  Django Example Without Cache
+
+ def course_list(request):
+     courses = Course.objects.all()
+     return JsonResponse({"courses": list(courses.values())})
+
+
+# Every request → database hit.
+
+# 🚀 Django Example With Redis Cache
+
+# First install:
+
+# pip install django-redis
+
+
+# settings.py
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/1",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     }
+# }
+
+
+
+# View With Cache
+# from django.core.cache import cache
+# from django.http import JsonResponse
+# from .models import Course
+
+ def course_list(request):
+
+     data = cache.get("course_list")
+
+     if not data:
+         courses = Course.objects.all()
+         data = list(courses.values())
+         cache.set("course_list", data, timeout=60)  # 60 seconds
+
+#     return JsonResponse({"courses": data})
+
+#  What Happens Now?
+
+# First request:
+
+# DB query
+
+# Stored in Redis
+
+# Next 60 seconds:
+
+# No DB query
+
+# Served from Redis
+
+#  Faster response
+#  Reduced DB load
+
+# 📊 Performance Comparison
+# Without Redis	With Redis
+# 1000 DB queries	1 DB query
+# High CPU usage	Low CPU
+# Slow response	Very fast
+# DB overload risk	Stable
+# 🏫 LMS Real-Life Example
+
+# Imagine your Mini LMS:
+
+# 2000 students
+
+# Everyone loads dashboard at 9 AM
+
+# Dashboard shows:
+
+# Total students
+
+# Total courses
+
+# Total submissions
+
+# Without Redis:
+
+# 2000 DB calculations 😨
+
+# With Redis:
+
+# Calculate once
+
+# Store in cache
+
+# Serve 2000 users instantly
+
+
+
+#  Redis Use Cases in Real World
+
+# Instagram timeline
+
+# Netflix recommendations
+
+# Uber ride matching
+
+# E-commerce carts
+
+# Session storage
+
+# Rate limiting
+
+
+
+#  Redis Can Also Be Used For:
+
+# Not just cache:
+
+# Message broker (Celery)
+
+# Real-time chat
+
+# Pub/Sub
+
+# Leaderboards
+
+# Session storage
+
+
+
+#  Cache Expiry (Important Concept)
+# cache.set("key", value, timeout=300)
+
+
+# After 5 minutes → auto deleted.
+
+# Why?
+
+# Because cached data can become outdated.
+
+#  Cache Invalidation (Very Important)
+
+# If data changes:
+
+# Example:
+
+# New course created
+
+# You must clear cache:
+
+# cache.delete("course_list")
+
+
+# Otherwise users see old data.
+
+
+
+
+
+
+
+# Redis vs Database
+
+
+# Database	         Redis
+# Persistent	  Mostly temporary
+# Disk storage	  Memory storage
+# Complex queries  	Key-value
+# Slower	        Extremely fast
+
+
+
+
+# Redis is like keeping frequently used answers in your brain
+# Instead of checking the book every time.

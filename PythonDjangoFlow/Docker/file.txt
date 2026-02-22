@@ -1,0 +1,378 @@
+1️⃣ What is Docker? 
+
+
+Docker is a containerization platform that allows you to package an application along with its dependencies into a portable container that runs consistently across environments.
+
+
+
+Break it down:
+
+Containerization → Packaging app + dependencies
+
+Portable → Runs anywhere
+
+Consistent → Same behavior everywhere
+
+
+
+
+ 2️⃣ Why Docker is Needed?
+❌ Without Docker
+
+Works on your machine
+Fails on student’s machine
+
+
+
+Reasons:
+
+Different Python versions
+
+Different OS
+
+Missing dependencies
+
+Database version mismatch
+
+
+
+✅ With Docker
+
+Same Python version
+
+Same PostgreSQL version
+
+Same environment
+
+Same setup for everyone
+
+
+
+
+ 3️⃣ Important Docker Concepts 
+
+ 1. Image
+
+Definition:
+
+An Image is a blueprint for creating containers.
+
+
+
+Example:
+
+python:3.11
+
+postgres:15
+
+Image is read-only.
+
+
+
+
+
+🔹 2. Container
+
+Definition:
+
+A Container is a running instance of an image.
+
+Image → Blueprint
+Container → Running application
+
+
+
+
+
+
+🔹 3. Dockerfile
+Definition:
+
+A Dockerfile is a text file that contains instructions to build an image.
+
+
+
+
+🔹 4. Docker Compose
+Definition:
+
+Docker Compose allows you to run multiple containers together using a YAML file.
+
+Example:
+
+Django container
+
+PostgreSQL container
+
+
+
+
+🟢 4️⃣ Install Docker
+
+Download:
+
+ https://www.docker.com/products/docker-desktop/
+
+After install:
+
+docker --version
+docker-compose --version
+
+
+
+ 5️⃣ Dockerizing Django Project
+
+Assume project structure:
+
+lms_project/
+   manage.py
+   requirements.txt
+   lms_project/
+
+
+🟢 STEP 1 — Create requirements.txt
+
+Inside project:
+
+django
+djangorestframework
+psycopg2-binary
+djangorestframework-simplejwt
+
+
+
+
+
+🟢 STEP 2 — Create Dockerfile
+
+
+Inside root folder:
+
+FROM python:3.11
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+
+
+
+
+
+
+
+ Each Line Means
+
+
+
+FROM python:3.11
+
+Base image with Python installed.
+
+
+WORKDIR /app
+
+Sets working directory inside container.
+
+
+
+COPY requirements.txt .
+
+Copies file into container.
+
+
+
+
+RUN pip install
+
+Installs dependencies.
+
+
+
+COPY . .
+
+Copies project code.
+
+
+
+CMD
+
+Starts Django server.
+
+
+
+ STEP 3 — Build Image
+docker build -t lms_app .
+
+-t → tag name
+
+lms_app → image name
+
+. → current directory
+
+
+
+
+
+ STEP 4 — Run Container
+docker run -p 8000:8000 lms_app
+
+Now open:
+
+http://localhost:8000
+
+Django running inside container ✅
+
+
+
+
+🟢 6️⃣ Add PostgreSQL Using Docker Compose
+
+Now we run:
+
+Django container
+
+PostgreSQL container
+
+Together.
+
+🟢 STEP 1 — Create docker-compose.yml
+version: '3'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: lms_db
+      POSTGRES_USER: lms_user
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+
+
+db service:
+
+Runs PostgreSQL
+
+Creates DB automatically
+
+Uses environment variables
+
+web service:
+
+Builds Django image
+
+Maps port 8000
+
+Depends on db
+
+
+
+ STEP 2 — Update Django DB Settings
+
+Change HOST:
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'lms_db',
+        'USER': 'lms_user',
+        'PASSWORD': 'password123',
+        'HOST': 'db',  # service name
+        'PORT': '5432',
+    }
+}
+
+Important:
+Use "db" not localhost.
+
+Because:
+Inside Docker, containers communicate using service names.
+
+
+ STEP 3 — Run Everything
+docker-compose up --build
+
+Now:
+
+PostgreSQL runs in container
+
+Django runs in container
+
+Connected automatically
+
+
+
+ 7️⃣ Important Docker Commands
+
+Stop containers:
+
+docker-compose down
+
+See running containers:
+
+docker ps
+
+See images:
+
+docker images
+
+Remove image:
+
+docker rmi image_name
+
+
+ 8️⃣ How Docker Networking Works
+
+Inside docker-compose:
+
+Django → connects to PostgreSQL using:
+
+HOST = db
+
+Docker creates internal network automatically.
+
+
+
+ 9️⃣ Real Production Thinking
+
+In real production:
+
+Use Gunicorn instead of runserver
+
+Use Nginx
+
+Use environment variables
+
+Never hardcode passwords
+
+Use volumes for persistent DB data
+
+
+
+ 🔟 Final Architecture
+
+Browser
+⬇
+Django container
+⬇
+PostgreSQL container
+⬇
+Docker network
